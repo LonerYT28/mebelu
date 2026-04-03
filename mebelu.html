@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<title>Mēbeļu salons</title>
+<style>
+body { font-family:'Segoe UI',sans-serif; margin:0; display:flex; }
+header { background:#6b4f4f; color:white; padding:20px; text-align:center; font-size:28px; width:100%; position:fixed; top:0; z-index:100; }
+main { display:flex; width:100%; margin-top:90px; }
+.catalog { flex:3; display:flex; flex-wrap:wrap; gap:20px; padding:20px; justify-content:flex-start; }
+.card { background:white; padding:15px; border-radius:12px; width:220px; box-shadow:0 4px 8px rgba(0,0,0,0.1); text-align:center; transition:transform .2s; }
+.card:hover { transform:scale(1.05); }
+.card img { width:100%; border-radius:8px; }
+.card h4 { margin:10px 0 5px; color:#333; }
+.card p { color:#666; font-weight:bold; }
+button { padding:8px 12px; border:none; border-radius:6px; margin-top:10px; cursor:pointer; font-weight:bold; }
+.add { background:#6b4f4f; color:white; }
+.remove { background:#e74c3c; color:white; margin-left:10px; }
+.cart { flex:1; background:#f9f9f9; padding:20px; border-left:1px solid #ccc; min-width:250px; max-height:calc(100vh - 90px); overflow-y:auto; position:sticky; top:90px; }
+.pay { background:#27ae60; color:white; display:block; width:100%; font-size:18px; text-align:center; margin-top:10px; }
+.cart-item { display:flex; justify-content: space-between; margin-bottom:8px; }
+</style>
+</head>
+<body>
+
+<header>🛋 Mēbeļu salons</header>
+
+<main>
+<div class="catalog" id="catalogItems"></div>
+
+<div class="cart">
+<h3>🛒 Grozs</h3>
+<div id="cartItems"></div>
+<div id="total">Kopā: 0 €</div>
+<button class="pay" onclick="pay()">💳 Apmaksāt</button>
+</div>
+</main>
+
+<script>
+// Список товаров
+let products = [
+    {id:1, name:"Dīvāns Daniels", price:450, image:"https://images.unsplash.com/photo-1588854337113-c19e89d92f82?auto=format&fit=crop&w=400&q=80"},
+    {id:2, name:"Dīvāns Emma", price:550, image:"https://images.unsplash.com/photo-1598300056088-5b9f7d7a4c07?auto=format&fit=crop&w=400&q=80"},
+    {id:3, name:"Dīvāns Max", price:600, image:"https://images.unsplash.com/photo-1601924928373-0c8db9c1fc4d?auto=format&fit=crop&w=400&q=80"}
+];
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+let catalogDiv = document.getElementById("catalogItems");
+let cartItemsDiv = document.getElementById("cartItems");
+let totalDiv = document.getElementById("total");
+
+// отрисовка каталога
+function loadProducts(){
+    let html = "";
+    products.forEach(p=>{
+        html += `
+        <div class="card">
+            <img src="${p.image}" alt="${p.name}">
+            <h4>${p.name}</h4>
+            <p>${p.price} €</p>
+            <button class="add" onclick="addToCart(${p.id})">Pievienot</button>
+        </div>`;
+    });
+    catalogDiv.innerHTML = html;
+}
+
+// добавить в корзину
+function addToCart(id){
+    cart.push(id);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    renderCart();
+}
+
+// удалить из корзины
+function removeFromCart(index){
+    cart.splice(index,1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    renderCart();
+}
+
+// отрисовка корзины с ценой каждого товара
+function renderCart(){
+    let html = "";
+    let total = 0;
+    cart.forEach((id,index)=>{
+        let p = products.find(x=>x.id==id);
+        if(!p) return;
+        total += p.price;
+        html += `<div class="cart-item">
+                    <span>${p.name} - ${p.price} €</span>
+                    <button class="remove" onclick="removeFromCart(${index})">❌</button>
+                 </div>`;
+    });
+    cartItemsDiv.innerHTML = html;
+    totalDiv.innerText = "Kopā: "+total+" €";
+}
+
+// кнопка оплата через Stripe Payment Link
+function pay(){
+    if(cart.length===0){ alert("Grozs ir tukšs!"); return; }
+    window.location.href = "https://buy.stripe.com/test_5kQfZi1vY2ocfxjccz4wM00";
+}
+
+// запуск
+loadProducts();
+renderCart();
+</script>
+
+</body>
+</html>
